@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import linalg
 import matplotlib.pyplot as plt
+from matplotlib import animation, rc
 
 def newmark(ug, u0=0, up0=0, Tn=0.1, ξ=0.05, Δt=0.01, γ=1/2, β=1/6):
     m = 1. # Arbitrary mass
@@ -100,11 +101,44 @@ for i in range(n):
 # PLOTTING
 a = 20
 b = 5
-
+# Sd vs Time
 f1 = plt.figure(figsize = (a,b))
-plt.plot(t, response)
-plt.legend(loc = 'best', frameon = True, fontsize = 'x-large')
-plt.xlabel('Time [s]', size = 16)
-plt.ylabel('Sa [cm/s2]', size = 16)
 
+for i in range(n):
+    plt.plot(t, response[:,i], label = 'DOF %i' %(i+1))
+
+plt.legend(loc = 'upper right', frameon = True, fontsize = 'x-large')
+plt.xlabel('Time [s]', size = 16)
+plt.ylabel('Sd [cm]', size = 16)
+plt.axis([0, t[-1], -3, 3])
+plt.show()
+
+rc('animation', html = 'jshtml')
+
+# First set the figure, the axis, and the plot we want to animate
+fig = plt.figure(figsize=(10,10))
+ax = plt.axes(xlim = (-2.5, 2.5), ylim = (0, n))
+line, = ax.plot([], [], 'ko:', lw=2, label = '0.00s')
+
+# Initialization function: plot the background of each frame
+def init():
+    line.set_data([], [])
+    return line,
+
+# Animation function: This function is called sequentially
+def animate(i):
+    x = np.insert(response[i],0,0)
+    y = np.arange(0, n+1, 1)
+
+    line.set_data(x,y)
+    line.set_label('%6.2fs'%(i*0.02))
+    ax.legend()
+
+    return line,
+
+# Call the Animator, blit = True means only re-draw the parts that have changed.
+anim = animation.FuncAnimation(fig, animate, init_func = init, frames = N, interval = 50, blit = True)
+
+# Save the animation as mp4 This requires ffmpeg or mencoder to be 
+#anim.save('basic_animation.mp4', fps = 30, extra_args = ['-vcodec', 'libx264'])
 plt.show()
