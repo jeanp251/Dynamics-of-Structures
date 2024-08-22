@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import linalg
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def newmark(ug, u0=0, up0=0, Tn=0.1, ξ=0.05, Δt=0.01, γ=1/2, β=1/6):
     m = 1. # Arbitrary mass
@@ -67,7 +67,7 @@ for i in range(n):
 PF, Tn = [], []
 
 print('-'*100)
-print('Natural Periods Tn and Participation Factors')
+print('Natural Periods Tn and Participation Factors (PF)')
 for i in range(n):
     PF.append(sum(Φ[:,i].T@M))
     Tn.append(2.0*np.pi/Ω[i]**0.5)
@@ -76,3 +76,35 @@ for i in range(n):
 print('-'*100)
 print('- Sum of the participation mass factors:')
 print(sum(PF))
+print('-'*100)
+
+# READING THE SIGNAL AND ANALYSIS PARAMETERS
+file_name = 'PRQ_19661017.txt'
+A = np.genfromtxt('./Signals/'+file_name, skip_header = 37, encoding = 'latin')
+dt = A[1,0]
+
+t, ddug = A[:,0], A[:,1]
+γ, β = 1/2, 1/6
+N = len(ddug)
+
+response = np.zeros((N,n))
+
+for i in range(n):
+    # n: degrees of freedom
+    # N: number of points of the seismic record
+    x, dx, ddx = newmark(-PF[i]*ddug, u0 = 0, up0 = 0, Tn = Tn[i], ξ=0.05, Δt=dt, γ = 1/2, β=1/6)
+
+    for j in range(N):
+        response[j] = x[j]*Φ[:,i] + response[j]
+
+# PLOTTING
+a = 20
+b = 5
+
+f1 = plt.figure(figsize = (a,b))
+plt.plot(t, response)
+plt.legend(loc = 'best', frameon = True, fontsize = 'x-large')
+plt.xlabel('Time [s]', size = 16)
+plt.ylabel('Sa [cm/s2]', size = 16)
+
+plt.show()

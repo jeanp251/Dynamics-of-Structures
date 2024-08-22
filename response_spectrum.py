@@ -33,7 +33,7 @@ def state_space(xi, k, omega_n, dt, uddg):
 # EL-CENTRO READ SIGNAL
 signal = pd.read_excel('./Signals/ELC.xls')
 t = signal.iloc[:,0] # t [s]
-uddg = signal.iloc[:,1] # Ground Acceleration [g] 
+uddg = signal.iloc[:,1] # Ground Acceleration [g]
 plt.plot(t, uddg)
 plt.show()
 
